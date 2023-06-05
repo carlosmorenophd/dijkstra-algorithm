@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { usePrim } from "../code/use-prime";
+import { useDijkstra } from "../code/use-dijkstra";
 
 const useBodyUi = ({ init }) => {
-  const { primMST, getTree } = usePrim({init: {parent: 0}});
+  const { algorithm, } = useDijkstra({init: {parent: 0}});
   const [data, setData] = useState(init.data);
   const [alert, setAlert] = useState(false);
   const [result, setResult] = useState(init.result);
@@ -13,6 +13,12 @@ const useBodyUi = ({ init }) => {
     },
     children: [],
   });
+  const [source, setSource] = useState(0);
+
+  const handleChangeSource = (event)  =>
+  {
+    setSource(event.target.valueAsNumber);
+  }
 
   const handleAlertClose = () => {
     setAlert(false);
@@ -88,8 +94,9 @@ const useBodyUi = ({ init }) => {
 
   //Functionality when user click en basic button
   const handleResult = () => {
-    setResult(primMST(data));
-    setTree(getTree());
+    setResult(algorithm(data, source));
+    // setResult(algorithm(data));
+    // setTree(getTree());
   };
 
   return {
@@ -97,8 +104,10 @@ const useBodyUi = ({ init }) => {
     data,
     result,
     tree,
+    source,
 
     handleAlertClose,
+    handleChangeSource,
     handleChangeListValue,
     handleChangeMatrixValue,
     handleListAdd,

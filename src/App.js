@@ -6,7 +6,7 @@ import BodyUi from "./components/BodyUi";
 function App() {
   return (
     <Box sx={{ width: "100%", m: 1, p: 1 }} height="100vh">
-      <TitleBar title="Get a minimal expansion tree" />
+      <TitleBar title="Single source shortest paths" />
       <BodyUi />
     </Box>
   );
