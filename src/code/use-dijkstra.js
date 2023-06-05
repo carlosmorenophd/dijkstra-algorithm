@@ -1,64 +1,71 @@
 import dataTree from "data-tree";
 import { uid } from "uid";
 
-const usePrim = ({ init }) => {
+const useDijkstra = ({ init }) => {
   const parent = init.parent;
   let tree = [];
 
-  const primMST = (graph) => {
-    const result = primMSTImplementation(graph);
-    tree.push({
-      id: parent,
-      name: "Main",
-      parent: null,
-      source: -1,
-      destiny: -1,
-      cost: -1,
-    });
-    result.forEach((element) => {
-      element[2] = graph[element[0]][element[1]];
-    });
-    for (let i = 0; i < graph.length; i++) {
-      const children = result.filter((element) => element[0] === i);
-      children.forEach((element) => {
-        tree.push({
-          id: element[1],
-          parent: element[0],
-          source: element[0],
-          destiny: element[1],
-          cost: element[2],
-        });
-      });
+  const algorithm = (graph, source) => {
+    const { distances, previous } = algorithmImplementation({graph, source});
+    let result = [];
+    for (let vertex = 0; vertex < graph.length; vertex++) {
+      const path = reconstructPath(previous, vertex);
+      result.push([vertex, `${path.join(' -> ')}`, distances[vertex]])
+      // console.log(`Shortest path from ${source} to ${vertex}: ${path.join(' -> ')}`);
+      // console.log(`Distance: ${distances[vertex]}`);
     }
-    // console.log(tree);
     return result;
   };
 
-  const primMSTImplementation = (graph) => {
+  const algorithmImplementation = ({graph, source}) => {
     const numVertices = graph.length;
+    const distances = Array(numVertices).fill(Infinity);
     const visited = Array(numVertices).fill(false);
-    const minimumSpanningTree = [];
-    let currentNode = 0;
-    visited[currentNode] = true;
-    while (minimumSpanningTree.length < numVertices - 1) {
-      let minWeight = Infinity;
-      let nextNode = null;
-      for (let i = 0; i < numVertices; i++) {
-        if (visited[i]) {
-          for (let j = 0; j < numVertices; j++) {
-            if (!visited[j] && graph[i][j] !== 0 && graph[i][j] < minWeight) {
-              minWeight = graph[i][j];
-              nextNode = j;
-            }
+    const previous = Array(numVertices).fill(null);
+  
+    distances[source] = 0;
+  
+    for (let i = 0; i < numVertices - 1; i++) {
+      const minDistanceVertex = getMinDistanceVertex(distances, visited);
+      visited[minDistanceVertex] = true;
+      // console.log("Visited:",visited);
+  
+      for (let v = 0; v < numVertices; v++) {
+        if (!visited[v] && graph[minDistanceVertex][v] !== 0 && distances[minDistanceVertex] !== Infinity) {
+          const newDistance = distances[minDistanceVertex] + graph[minDistanceVertex][v];
+          if (newDistance < distances[v]) {
+            distances[v] = newDistance;
+            previous[v] = minDistanceVertex;
           }
         }
       }
-      minimumSpanningTree.push([currentNode, nextNode]);
-      visited[nextNode] = true;
-      currentNode = nextNode;
     }
-    return minimumSpanningTree;
+  
+    return { distances, previous };
   };
+
+  const reconstructPath = (previous, vertex) => {
+    const path = [];
+    while (vertex !== null) {
+      path.unshift(vertex);
+      vertex = previous[vertex];
+    }
+    return path;
+  };
+
+  const getMinDistanceVertex = (distances, visited) => {
+    let minDistance = Infinity;
+    let minDistanceVertex = -1;
+  
+    for (let v = 0; v < distances.length; v++) {
+      if (!visited[v] && distances[v] < minDistance) {
+        minDistance = distances[v];
+        minDistanceVertex = v;
+      }
+    }
+  
+    return minDistanceVertex;
+  }
 
   const getTree = () => {
     if (tree.length === 0) {
@@ -145,9 +152,10 @@ const usePrim = ({ init }) => {
   };
 
   return {
-    primMST,
+    algorithm,
+    reconstructPath,
     getTree,
   };
 };
 
-export { usePrim };
+export { useDijkstra };
